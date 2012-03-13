@@ -11,12 +11,22 @@ dropbox_token_secret = ""
 dropbox_access_type = 'app_folder'
 accessToken = {}
 
+class SavedSession:
+    key = ""
+    secret = ""
+    token = ""
+    token_secret = ""
+    def __init__(self, key, secret, token, token_secret):
+        self.key = key
+        self.secret = secret
+        self.token = token
+        self.token_secret = token_secret
+
 def getPickledAccessToken():
     f = open(".schlepp.key")
-    accessToken = pickle.load(f)
-    dropbox_token = accessToken.key
-    dropbox_token_secret = accessToken.secret
+    mySessionInfo = pickle.load(f)
     print "Successfully found your key."
+    return mySessionInfo
 
 def getFirstAccessToken():
     print "Enter your Dropbox Key: "
@@ -36,7 +46,8 @@ def getFirstAccessToken():
     if (filelocation == ""):
         filelocation = ".schlepp.key"
     f = open(filelocation, 'w')
-    pickle.dump(access_token, f)
+    storedSession = SavedSession(dropbox_key, dropbox_secret, access_token.key, access_token.secret)
+    pickle.dump(storedSession, f)
     print "All done getting access token."
 
 if __name__ == "__main__":
@@ -52,20 +63,19 @@ if __name__ == "__main__":
     else:
         print "Looks like I can't find that file."
         sys.exit(1)
-    try:
-        getPickledAccessToken()
-    except IOError:
+    SessionInfo = {}
+    if (not(os.path.exists(".schlepp.key"))):
         print "Didn't find an access token.  Getting one for you."
         getFirstAccessToken()
-        getPickledAccessToken()
+    SessionInfo = getPickledAccessToken()
     print "Schlepping."
-    sess = session.DropboxSession(dropbox_key, dropbox_secret,dropbox_access_type)
-    sess.set_token(dropbox_token,dropbox_token_secret) 
-    sess.set_token("blah","blaaaah") 
+    sess = session.DropboxSession(SessionInfo.key, SessionInfo.secret,dropbox_access_type)
+    sess.set_token(SessionInfo.token,SessionInfo.token_secret)
+    client = client.DropboxClient(sess)
     f = open(uploadFile)
     response = client.put_file(uploadFile, f)
-    print "uploaded: ", response
+    print "Successfully uploaded.  Sharing."
     shareresponse = client.share(response['path'])
-    print "Shared: ", shareresponse.url
+    print "Shared: ", shareresponse['url']
 
 
