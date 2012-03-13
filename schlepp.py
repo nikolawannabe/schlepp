@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 from dropbox import client, session
 import pickle
 import sys,os
@@ -53,7 +53,7 @@ def getFirstAccessToken():
 if __name__ == "__main__":
     uploadFile = ""
     if len(sys.argv) > 1:
-        upLoadFile = sys.argv[1]
+        uploadFile = sys.argv[1]
         print "I see you'd like to schlepp", uploadFile
     else:
         print "What file to schlepp?: ",
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     if (os.path.exists(uploadFile)):
         print "Good, I found your file."
     else:
-        print "Looks like I can't find that file."
+        print "Looks like I can't find a file called '{0}'.".format(uploadFile)
         sys.exit(1)
     SessionInfo = {}
     if (not(os.path.exists(".schlepp.key"))):
